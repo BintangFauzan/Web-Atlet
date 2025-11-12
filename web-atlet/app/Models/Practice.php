@@ -23,7 +23,7 @@ class Practice extends Model
         return $this->belongsTo(Team::class);
     }
 
-    public function attendaces()
+    public function attendances()
     {
         return $this->hasMany(PracticeAttendance::class);
     }

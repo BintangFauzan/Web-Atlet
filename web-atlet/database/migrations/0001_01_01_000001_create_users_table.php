@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->enum('role', ['manager', 'coach', 'athlete']);
-            $table->foreignId('team_id')->nullable()->constrained('teams')->onDelete('set null');
+            $table->foreignId('team_id')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

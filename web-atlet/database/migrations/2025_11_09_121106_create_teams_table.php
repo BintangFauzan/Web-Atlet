@@ -12,12 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('teams', function (Blueprint $table) {
-          $table->id();
+            $table->id();
             $table->string('name');
-            
-            // FK: Manager yang membuat Tim
-            $table->foreignId('manager_id')->constrained('users')->onDelete('restrict'); 
-            
+            $table->foreignId('manager_id'); // HANYA KOLOM, TANPA CONSTRAINED
             $table->timestamps();
         });
     }
