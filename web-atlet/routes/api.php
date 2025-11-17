@@ -15,6 +15,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user/current', function(Request $request){
+        return $request->user();
+    });
+    Route::post('/logout', [AuthController::class, 'logout']);
    // Rute untuk Pelatih (Coach)
     Route::prefix('coach')->group(function () {
         Route::get('dashboard', [CoachController::class, 'dashboard']);
