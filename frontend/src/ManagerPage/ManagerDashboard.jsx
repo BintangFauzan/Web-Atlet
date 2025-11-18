@@ -9,6 +9,10 @@ import TeamManagementTable from "./component/TeamManagementTable";
 import ScheduleManagementTable from "./component/ScheduleManagementTable";
 import TeamDetailModal from "./component/TeamDetailModal";
 import { Users, Trello, Calendar, Zap, UserPlus, Edit, Trash2, Loader2, MapPin } from 'lucide-react';
+import { Modal } from "../ui/ModalDialog";
+import FormInput from "./component/FormInput";
+import FormTambahTim from "./component/FormTambahTim";
+import FormTambahJadwal from "./component/FormTambahJadwal";
 
 export default function ManagerDashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -24,6 +28,13 @@ export default function ManagerDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // State Tambah Pengguna
+  const [modalTambah, setModalTambah] = useState(false)
+  // State Tambah Tim
+  const [modalTambahTim, setModalTambahTim] = useState(false)
+  // State Tambah Jadwal
+  const [modalTambahJadwal, setModalTambahJadwal] = useState(false)
+  const [refresh, setRefresh] = useState(false)
   
   // STATE UNTUK FILTER
   const [userRoleFilter, setUserRoleFilter] = useState('all');
@@ -100,7 +111,7 @@ export default function ManagerDashboard() {
         total_matches: allSchedules.filter(s => s.type === 'Pertandingan').length,
         total_practices: allSchedules.filter(s => s.type === 'Latihan').length,
       });
-      
+      setRefresh(false)
     } catch (err) {
       console.error("Gagal memuat dashboard:", err);
       setError(`Gagal memuat data dashboard: ${err.message}.`);
@@ -111,7 +122,7 @@ export default function ManagerDashboard() {
 
   useEffect(() => {
     fetchDashboardData(); 
-  }, []);
+  }, [refresh]);
   
   // LOGIKA FILTER (useMemo) - Tidak Berubah
   const filteredUsers = useMemo(() => {
@@ -135,16 +146,57 @@ export default function ManagerDashboard() {
   }, []);
 
 
-  // Handler CRUD (Tidak Berubah)
-  const handleAddUser = () => navigate('/manager/register');
-  const handleAddTeam = () => console.log("Arahkan ke form Tambah Tim");
-  const handleAddSchedule = () => console.log("Arahkan ke form Tambah Jadwal");
+  // Handler Modal Tambah Pengguna
+  function handleOpenModalTambah(){
+    setModalTambah(true)
+  }
+  function handleCloseModalTambah(){
+    setModalTambah(false)
+  }
+  function handleSuccesTambah(){
+    setModalTambah(false)
+    setRefresh(true)
+  }
+  // Handle Modal Tambah Tim
+  function openModalTambahTim(){
+    setModalTambahTim(true)
+  }
+  function closeModalTim(){
+    setModalTambahTim(false)
+  }
+  function handleSuccesInputTim(){
+    setModalTambahTim(false)
+    setRefresh(true)
+  }
+  // Handle Modal Tambah Jadwal
+  function openModalTambahJadwal(){
+    setModalTambahJadwal(true)
+  }
+  function closeModalJadwal(){
+    setModalTambahJadwal(false)
+  }
+  function handleSuccesInputJadwal(){
+    setModalTambahJadwal(false)
+    setRefresh(true)
+  }
 
   if (loading) return <div className="text-center p-10"><Loader2 className="animate-spin w-6 h-6 mx-auto text-blue-600 mb-2" /> Memuat Dashboard Manager...</div>;
   if (error) return <div className="text-center p-10 text-red-600 bg-red-100 border border-red-200 rounded-xl">{error}</div>;
 
   return (
-    <div className="space-y-10 p-4 sm:p-6 lg:p-8">
+   <>
+   <Modal isOpen={modalTambah} className="max-w-xl p-6" onClose={handleCloseModalTambah}>
+    <FormInput onSuccess={handleSuccesTambah} onClose={handleCloseModalTambah}/>
+   </Modal>
+   {/* Modal Tambah Tim */}
+   <Modal isOpen={modalTambahTim} className="max-w-xl p-6" onClose={closeModalTim}>
+   <FormTambahTim onSucces={handleSuccesInputTim} onClose={closeModalTim}/>
+   </Modal>
+   {/* Modal Tambah Jadwal */}
+   <Modal className="max-w-xl p-6" isOpen={modalTambahJadwal} onClose={closeModalJadwal}>
+    <FormTambahJadwal onSucces={handleSuccesInputJadwal} onClose={closeModalJadwal}/>
+   </Modal>
+     <div className="space-y-10 p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-800">Selamat datang, {dashboardData.manager_name}!</h1>
       
       {/* STAT CARDS (Sangat Bersih) */}
@@ -160,14 +212,14 @@ export default function ManagerDashboard() {
         filteredUsers={filteredUsers}
         userRoleFilter={userRoleFilter}
         setUserRoleFilter={setUserRoleFilter}
-        handleAddUser={handleAddUser}
+        handleAddUser={handleOpenModalTambah}
         getRoleBadge={getRoleBadge}
         usersRef={usersRef}
       />
       
       <TeamManagementTable
         teams={dashboardData.teams_data}
-        handleAddTeam={handleAddTeam}
+        handleAddTeam={openModalTambahTim}
         handleViewTeamDetails={handleViewTeamDetails}
         teamsRef={teamsRef}
       />
@@ -177,7 +229,7 @@ export default function ManagerDashboard() {
         teamsData={dashboardData.teams_data}
         scheduleTeamFilter={scheduleTeamFilter}
         setScheduleTeamFilter={setScheduleTeamFilter}
-        handleAddSchedule={handleAddSchedule}
+        handleAddSchedule={openModalTambahJadwal}
         scheduleRef={scheduleRef}
       />
 
@@ -190,5 +242,6 @@ export default function ManagerDashboard() {
         onClose={handleCloseModal}
       />
     </div>
+   </>
   );
 }

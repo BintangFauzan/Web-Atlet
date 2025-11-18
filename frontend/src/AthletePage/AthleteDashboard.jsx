@@ -2,78 +2,94 @@ import { useEffect, useState } from "react";
 import moment from "moment";
 import { Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Link } from "react-router";
+import apiClient from "../services/apiClien";
+
+// Helper untuk mengambil token
+const getAuthToken = () => {
+  return localStorage.getItem('AuthToken');
+};
+
 export default function AthleteDashboard() {
   const [data, setData] = useState({
-    team_name: "Tim elang murah",
-    user_id: 4,
-    upcoming_schedule: [],
+    team_name: "",
+    upcoming_practices: [],
+    upcoming_matches: [],
   });
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [loading, setLoanding] = useState(false);
-  // LOGIKA TAMPILAN 1: Menentukan Latihan yang Aktif untuk Check-In
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activePractice, setActivePractice] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoanding(true);
-      // Data dummy
-      const now = moment();
-      const nextHour = now.clone().add(1, "hour").format("HH:mm:ss");
-    //   const lastHour = now.clone().subtract()(1, "hour").format("HH:mm:ss");
-      const todayDate = now.format("YYYY-MM-DD");
+  const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      const token = getAuthToken();
 
-      const dummySchedule = [
-        {
-          id: 1,
-          type: "Latihan",
-          date: todayDate,
-          time: nextHour, // Waktu Latihan 1 jam dari sekarang
-          start_time: nextHour,
-          location: "Lapangan Utama",
-          can_check_in: true,
-        },
-        { 
-            id: 2, 
-            type: 'Pertandingan', 
-            date: moment().add(1, 'day').format('YYYY-MM-DD'), 
-            time: '16:00:00', 
-            opponent_name: 'FC Musuh', 
-            location: 'Stadion Utama'
-        },
-      ];
+      if (!token) {
+        setError("Autentikasi gagal. Silakan login kembali.");
+        setLoading(false);
+        return;
+      }
 
-      setData(prev => ({
-        ...prev,
-        upcoming_schedule: dummySchedule
-      }))
+      try {
+        const response = await apiClient.get("/athlete/dashboard");
+        const result = response.data;
 
-      // LOGIKA TAMPILAN 2: Identifikasi Latihan yang Boleh Check-In
-      const practiceForCheckIn = dummySchedule.find(
-        sch => sch.type === 'Latihan' && sch.can_check_in
-      )
-      setActivePractice(practiceForCheckIn)
-      setLoanding(false)
+        setData(result);
+
+        // LOGIKA TAMPILAN: Identifikasi Latihan yang Boleh Check-In
+        // Berdasarkan logika backend, kita cari latihan yang dijadwalkan HARI INI.
+        const todayString = moment().format('YYYY-MM-DD');
+        const practiceForCheckIn = result.upcoming_practices.find(
+          // Tampilkan jika jadwalnya hari ini DAN atlet belum check-in
+          practice => practice.date.substring(0, 10) === todayString && !practice.has_checked_in
+        );
+        setActivePractice(practiceForCheckIn);
+
+      } catch (err) {
+        if (err.response && err.response.data && err.response.data.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Gagal mengambil data dashboard. Periksa koneksi Anda.");
+        }
+        console.error("Error fetching dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData()
-  },[]);
 
-  // LOGIKA TAMPILAN 3: Fungsi Tampilan Check-In (Akan dipanggil saat tombol diklik)
-  const handleCheckIn = async () => {
-    if(!activePractice) return
-
-    setIsCheckingIn(true)
-    // --- TEMPAT LOGIKA API POST /api/athlete/checkin/{practice_id} ---
+  useEffect(() => {
     
-    // Simulasikan delay API
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    fetchData();
+  }, []);
 
-    // LOGIKA TAMPILAN 4: Setelah sukses
-    alert(`Berhasil check in untuk latihan ID: ${activePractice.id}`)
-    setIsCheckingIn(false)
-    setActivePractice(null)
-  }
 
-  if (loading) return <div className="text-center p-10">Memuat Data</div>
+  const handleCheckIn = async () => {
+    if (!activePractice) return;
+
+    setIsCheckingIn(true);
+
+    try {
+      // Gunakan apiClient (Axios) agar konsisten
+      const response = await apiClient.post(`/athlete/checkin/${activePractice.id}`);
+      const result = response.data;
+
+      alert(result.message); // "Kehadiran berhasil dicatat."
+      setActivePractice(null); // Sembunyikan tombol setelah berhasil
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(`Error: ${err.response.data.message}`);
+      } else {
+        alert(`Error: Gagal melakukan check-in.`);
+      }
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  if (loading) return <div className="text-center p-10">Memuat Data Dashboard...</div>;
+  if (error) return <div className="text-center p-10 text-red-500">Error: {error}</div>;
+
   return (
     <>
         <div className="space-y-8">
@@ -82,7 +98,7 @@ export default function AthleteDashboard() {
       {/* 1. Status Tim */}
       <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500">
         <p className="text-lg font-semibold text-gray-700">Tim Anda:</p>
-        <p className="text-2xl font-extrabold text-blue-600">{data.team_name}</p>
+        <p className="text-2xl font-extrabold text-blue-600">{data.team_name || "Belum ada tim"}</p>
       </div>
 
       {/* 2. Opsi Check-In (DYNAMIC VISIBILITY) */}
@@ -94,7 +110,7 @@ export default function AthleteDashboard() {
           <div className="p-4 bg-yellow-50 border border-yellow-300 rounded-lg flex justify-between items-center">
             <div>
                 <p className="font-bold text-lg text-yellow-800">Latihan Siap: {moment(activePractice.date).format('D MMMM')}</p>
-                <p className="text-sm text-yellow-700">Pukul {activePractice.time.substring(0, 5)} di {activePractice.location}</p>
+                <p className="text-sm text-yellow-700">Pukul {activePractice.start_time.substring(0, 5)} di {activePractice.location}</p>
             </div>
             <button
               onClick={handleCheckIn}
@@ -124,23 +140,27 @@ export default function AthleteDashboard() {
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Jadwal Tim Mendatang</h2>
         <div className="divide-y divide-gray-200">
-            {data.upcoming_schedule.map((item) => (
-                <div key={item.id + item.type} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center">
+            {[...data.upcoming_practices, ...data.upcoming_matches]
+              .sort((a, b) => new Date(a.date) - new Date(b.date))
+              .map((item) => {
+                const isPractice = !!item.start_time; // Cek apakah ini jadwal latihan
+                return (
+                  <div key={`${isPractice ? 'p' : 'm'}-${item.id}`} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center">
                     <div>
                         <p className="text-base font-semibold">
-                            {item.type === 'Latihan' ? 'Latihan' : `VS ${item.opponent_name}`}
+                            {isPractice ? 'Latihan' : `VS ${item.opponent_name}`}
                         </p>
                         <p className="text-sm text-gray-500">
-                            {moment(item.date).format('D MMM YYYY')} pukul {item.time.substring(0, 5)} - {item.location}
+                            {moment(item.date).format('D MMM YYYY')} pukul {(isPractice ? item.start_time : item.time).substring(0, 5)} - {item.location}
                         </p>
                     </div>
                     <span className={`text-xs font-medium px-3 py-1 rounded-full 
-                        ${item.type === 'Latihan' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                        {item.type}
+                        ${isPractice ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                        {isPractice ? 'Latihan' : 'Pertandingan'}
                     </span>
-                </div>
-            ))}
-            {data.upcoming_schedule.length === 0 && <p className="text-gray-500 py-4">Tidak ada jadwal mendatang.</p>}
+                </div>);
+            })}
+            {data.upcoming_practices.length === 0 && data.upcoming_matches.length === 0 && <p className="text-gray-500 py-4">Tidak ada jadwal mendatang.</p>}
         </div>
         
         {/* Link cepat ke riwayat absensi */}

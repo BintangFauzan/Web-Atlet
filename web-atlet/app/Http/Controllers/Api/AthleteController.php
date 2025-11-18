@@ -22,16 +22,21 @@ class AthleteController extends Controller
             return response()->json(['message' => 'Akses ditolak atau tim tidak ditemukan.'], 403);
         }
 
+        $team = Team::find($athlete->team_id);
+
         $today = Carbon::today();
         
         // Ambil 5 jadwal Latihan terdekat
         $upcomingPractices = Practice::where('team_id', $athlete->team_id)
-            ->whereDate('date', '>=', $today)
+            ->where('date', '>=', $today)
+            ->withExists(['attendances as has_checked_in' => function ($query) use ($athlete) {
+                $query->where('user_id', $athlete->id);
+            }])
             ->orderBy('date')
             ->orderBy('start_time')
             ->limit(5)
             ->get();
-            
+
         // Ambil 5 jadwal Pertandingan terdekat
         $upcomingMatches = Matche::where('team_id', $athlete->team_id)
             ->whereDate('date', '>=', $today)
@@ -40,7 +45,7 @@ class AthleteController extends Controller
             ->get();
 
         return response()->json([
-            'team_id' => $athlete->team_id,
+            'team_name' => $team ? $team->name : null,
             'upcoming_practices' => $upcomingPractices,
             'upcoming_matches' => $upcomingMatches,
         ]);
@@ -55,8 +60,8 @@ class AthleteController extends Controller
             return response()->json(['message' => 'Anda bukan anggota tim ini.'], 403);
         }
 
-        // Cek waktu: Pastikan check-in dilakukan pada hari Latihan
-        if (Carbon::parse($practice->date)->isFuture() || Carbon::parse($practice->date)->isPast()) {
+        // Cek waktu: Pastikan check-in dilakukan pada hari yang sama dengan Latihan
+        if (!Carbon::parse($practice->date)->isToday()) {
             return response()->json(['message' => 'Check-in hanya bisa dilakukan pada hari latihan.'], 400);
         }
 
