@@ -9,6 +9,8 @@ import TeamManagementTable from "./component/TeamManagementTable";
 import ScheduleManagementTable from "./component/ScheduleManagementTable";
 import TeamDetailModal from "./component/TeamDetailModal";
 import { Users, Trello, Calendar, Zap, UserPlus, Edit, Trash2, Loader2, MapPin } from 'lucide-react';
+import ModalDialog from "./component/ModalDialog";
+import FormInput from "./component/FormInput";
 
 export default function ManagerDashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -32,6 +34,7 @@ export default function ManagerDashboard() {
   // STATE UNTUK MODAL DETAIL TIM
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const[modalInput, setModalInput] = useState(false)
   
   const navigate = useNavigate();
 
@@ -136,7 +139,7 @@ export default function ManagerDashboard() {
 
 
   // Handler CRUD (Tidak Berubah)
-  const handleAddUser = () => navigate('/manager/register');
+  // const handleAddUser = () => navigate('/manager/register');
   const handleAddTeam = () => console.log("Arahkan ke form Tambah Tim");
   const handleAddSchedule = () => console.log("Arahkan ke form Tambah Jadwal");
 
@@ -144,6 +147,15 @@ export default function ManagerDashboard() {
   if (error) return <div className="text-center p-10 text-red-600 bg-red-100 border border-red-200 rounded-xl">{error}</div>;
 
   return (
+    <>
+      <ModalDialog isModalOpen={modalInput} onClose={() => setModalInput(false)}>
+        <FormInput 
+          onClose={() => setModalInput(false)}
+          onSuccess={() => {
+            setModalInput(false); // Tutup modal
+            fetchDashboardData(); // Ambil ulang data terbaru
+          }}/>
+      </ModalDialog>
     <div className="space-y-10 p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-800">Selamat datang, {dashboardData.manager_name}!</h1>
       
@@ -160,7 +172,7 @@ export default function ManagerDashboard() {
         filteredUsers={filteredUsers}
         userRoleFilter={userRoleFilter}
         setUserRoleFilter={setUserRoleFilter}
-        handleAddUser={handleAddUser}
+        handleAddUser={() => setModalInput(true)}
         getRoleBadge={getRoleBadge}
         usersRef={usersRef}
       />
@@ -190,5 +202,6 @@ export default function ManagerDashboard() {
         onClose={handleCloseModal}
       />
     </div>
+    </>
   );
 }
