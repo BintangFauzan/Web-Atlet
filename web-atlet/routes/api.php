@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AthleteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CoachController;
 use App\Http\Controllers\Api\ManagerController;
+use App\Http\Controllers\Api\TeamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('team', [TeamController::class, 'index']);
    // Rute untuk Pelatih (Coach)
     Route::prefix('coach')->group(function () {
         Route::get('dashboard', [CoachController::class, 'dashboard']);
@@ -36,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     }); 
 
     Route::prefix('manager')->group(function() {
-        // Dashboard
+        //  
         Route::get('dashboard', [ManagerController::class, 'dashboard']);
 
         // Tim
