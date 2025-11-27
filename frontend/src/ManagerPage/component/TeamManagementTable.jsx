@@ -1,6 +1,6 @@
 import { Edit, Trash2, Trello } from "lucide-react";
 
-export default function TeamManagementTable({ teams, handleAddTeam, handleViewTeamDetails, teamsRef }){
+export default function TeamManagementTable({ teams, handleAddTeam, handleViewTeamDetails, teamsRef, clickHapusTim }){
     return(
         <>
             <div ref={teamsRef} className="pt-2"> 
@@ -40,7 +40,7 @@ export default function TeamManagementTable({ teams, handleAddTeam, handleViewTe
                                     >
                                         <Edit className="w-5 h-5" />
                                     </button>
-                                    <button className="text-red-600 hover:text-red-900 p-1" title="Hapus Tim"><Trash2 className="w-5 h-5" /></button>
+                                    <button className="text-red-600 hover:text-red-900 p-1" title="Hapus Tim" onClick={() => clickHapusTim(team.id)}><Trash2 className="w-5 h-5" /></button>
                                 </td>
                             </tr>
                         );

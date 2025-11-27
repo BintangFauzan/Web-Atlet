@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Matche;
 use App\Models\Practice;
 use App\Models\Team;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,6 +40,37 @@ class ManagerController extends Controller
 
         return response()->json(['message' => 'Tim berhasil dibuat.', 'team' => $team], 201);
     }
+    // Update Team
+    public function updateTeam($id, Request $request){
+        try{
+            $validate = $request->validate([
+                'name' => 'required|string',
+                'manager_id' => Auth::id()
+            ]);
+            $team = Team::findOrFail($id);
+            $team->update($validate);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil update team',
+                'data' => $team
+            ]);
+        }catch(Exception $err){
+            return response()->json([
+                'status' => false,
+                'message' => 'gagal update team',
+                'error' => $err
+            ]);
+        }
+    }
+    public function deleteTim($id){
+        $tim = Team::findOrFail($id);
+        $tim->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'berhasil hapus data',
+            'data' => $tim
+        ]);
+    }
     public function storePractice(Request $request)
     {
         $request->validate([
@@ -58,6 +90,32 @@ class ManagerController extends Controller
 
         return response()->json(['message' => 'Jadwal latihan berhasil dibuat.', 'practice' => $practice], 201);
     }
+
+    // Update Jadwal
+    public function updateJadwalPraktek(Request $request, $id){
+        try{
+            $validate = $request->validate([
+            'team_id' => 'required|exists:teams,id',
+            'date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'location' => 'required|string',
+            ]);
+            $practice = Practice::findOrFail($id);
+            $practice->update($validate);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil update pratek',
+                'data' => $practice
+            ]);
+        }catch(Exception $err){
+            return response()->json([
+                'status' => false,
+                'messager' => 'gagal update praktek',
+                'error' => $err
+            ]);
+        }
+    }
     public function storeMatche(Request $request)
     {
         $request->validate([
@@ -76,5 +134,32 @@ class ManagerController extends Controller
         $matche = Matche::create($request->all());
 
         return response()->json(['message' => 'Jadwal pertandingan berhasil dibuat.', 'matche' => $matche], 201);
+    }
+
+    // Update jadwal pertandingan
+    public function updateJadwalPertandingan(Request $request, $id){
+        try{
+            $validate = $request->validate([
+            'team_id' => 'required|exists:teams,id',
+            'opponent_name' => 'required|string|max:255',
+            'date' => 'required|date',
+            'time' => 'required|date_format:H:i',
+            'location' => 'required|string',
+            ]);
+
+            $match = Matche::findOrFail($id);
+            $match->update($validate);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil update jadwal pertandingan',
+                'data' => $match
+            ]);
+        }catch(Exception $err){
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal update jadwal pertandingan',
+                'error' => $err
+            ]);
+        }
     }
 }

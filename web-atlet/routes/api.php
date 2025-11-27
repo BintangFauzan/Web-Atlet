@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AthleteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CoachController;
 use App\Http\Controllers\Api\ManagerController;
+use App\Http\Controllers\Api\MatchController;
+use App\Http\Controllers\Api\PracticeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/match', [MatchController::class, 'index']);
    // Rute untuk Pelatih (Coach)
     Route::prefix('coach')->group(function () {
         Route::get('dashboard', [CoachController::class, 'dashboard']);
@@ -38,14 +42,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('manager')->group(function() {
         // Dashboard
         Route::get('dashboard', [ManagerController::class, 'dashboard']);
+        
+        // Edit user
+        Route::put("user/{id}", [AuthController::class, 'update']);
+        // Delete User
+        Route::delete('user/{id}', [AuthController::class, 'deleteUser']);
 
         // Tim
         Route::post('teams', [ManagerController::class, 'storeTeam']);
+        // Update Tim
+        Route::put("teams/{id}", [ManagerController::class, 'updateTeam']);
+        // Hapus Tim
+        Route::delete('teams/{id}', [ManagerController::class, 'deleteTim']);
         
         // Latihan
         Route::post('practices', [ManagerController::class, 'storePractice']);
+        // Update latihan
+        Route::put("practices/{id}", [ManagerController::class, 'updateJadwalPraktek']);
         
         // Pertandingan (Matche)
         Route::post('matches', [ManagerController::class, 'storeMatche']);
+        // Update jadwal pertandingan
+        Route::put("/matches/{id}", [ManagerController::class, 'updateJadwalPertandingan']);
+
+        // Hapus jadwal pertandingan
+        Route::delete("/matches/{id}", [MatchController::class, "destroy"]);
+
+        // Hapus jadwal latihan
+        Route::delete("/practice/{id}", [PracticeController::class, 'destroy']);    
     });
 });

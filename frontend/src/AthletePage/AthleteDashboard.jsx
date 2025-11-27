@@ -47,6 +47,21 @@ export default function AthleteDashboard() {
         setActivePractice(practiceForCheckIn);
 
       } catch (err) {
+        // Periksa secara spesifik error autentikasi/otorisasi
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          // Hapus semua data sesi yang tersimpan
+          localStorage.removeItem("AuthToken");
+          localStorage.removeItem("DataUser");
+          localStorage.removeItem("IdUser");
+          localStorage.removeItem("UserRole");
+
+          // Paksa pengguna kembali ke halaman login untuk sesi baru
+          // Menggunakan window.location.href memastikan state aplikasi di-reset total
+          window.location.href = '/';
+          return; // Hentikan eksekusi lebih lanjut
+        }
+        
+        // Penanganan untuk error lainnya
         if (err.response && err.response.data && err.response.data.message) {
           setError(err.response.data.message);
         } else {

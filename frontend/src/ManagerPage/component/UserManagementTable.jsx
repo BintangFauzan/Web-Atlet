@@ -1,6 +1,6 @@
 import { Edit, Trash2, UserPlus } from "lucide-react";
 
-export default function UserManagementTable({ filteredUsers, userRoleFilter, setUserRoleFilter, handleAddUser, getRoleBadge, usersRef }){
+export default function UserManagementTable({ filteredUsers, userRoleFilter, setUserRoleFilter, handleAddUser, getRoleBadge, usersRef, clikHapusPengguna, clickEditPengguna }){
     return(
         <>
             <div ref={usersRef} className="pt-2"> 
@@ -49,8 +49,8 @@ export default function UserManagementTable({ filteredUsers, userRoleFilter, set
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.team_name || 'N/A'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1"><Edit className="w-5 h-5" /></button>
-                                    <button className="text-red-600 hover:text-red-900 p-1"><Trash2 className="w-5 h-5" /></button>
+                                    <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1" onClick={() => clickEditPengguna(user)}><Edit className="w-5 h-5" /></button>
+                                    <button className="text-red-600 hover:text-red-900 p-1" onClick={() => clikHapusPengguna(user.id)}><Trash2 className="w-5 h-5" /></button>
                                 </td>
                             </tr>
                         ))
