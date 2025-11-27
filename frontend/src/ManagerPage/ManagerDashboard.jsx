@@ -29,7 +29,7 @@ import FormTambahJadwalPertandingan from "./component/FormTambahJadwalPertanding
 import { ManagerContext } from "../context/ManagerContext";
 import HapusTim from "./component/HapusTim";
 import FormEditUser from "./component/FormEditUser";
-import FormEditJadwal from "./component/FormEditJadwal";
+import FormEditJadwal from "./component/FormEditJadwalLatihan";
 
 export default function ManagerDashboard() {
   const [dashboardData, setDashboardData] = useState({

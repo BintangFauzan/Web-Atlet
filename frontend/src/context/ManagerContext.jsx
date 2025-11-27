@@ -27,13 +27,18 @@ export default function ManagerContextProvider({ children }) {
   // Edit jadwal praktek state
   const [openModalEditPraktek, setOpenModalEditPraktek] = useState(false);
   const [idEditJadwalPraktek, setIdJadwalPraktek] = useState(null);
-  const [formEditJadwalPraktek, setFormEditJadwalPraktek] = useState({
-    team_id: "",
-    date: "",
-    start_time: "",
-    end_time: "",
-    location: "",
-  });
+  const [formEditJadwal, setForomEditJadwal] = useState({
+    // field umum
+    team_id:"",
+    date:"",
+    location:"",
+    // Field latihan
+    start_time:"",
+    end_time:"",
+    // field pertandingan
+    opponent_name:"",
+    time:""
+  })
 
   const submitHapusTim = async () => {
     try {
@@ -111,21 +116,28 @@ export default function ManagerContextProvider({ children }) {
     e.preventDefault()
     setLoading(true)
     try{
-      let url = ""
       const id = idEditJadwalPraktek.id.split('-')[1]; // Ambil ID numerik dari string (misal: "practice-5" -> 5)
+      const typeJadwal = idEditJadwalPraktek.type
 
-      if(type === "practices"){
+      let payload = {...formEditJadwal}
+      let url = ""
+
+      if(typeJadwal === "Latihan"){
         url = `/manager/practices/${id}`
-      }else if(type === "match"){
+        // Hapus kolom tidak guna
+        delete payload.opponent_name
+        delete payload.time
+      }else if(typeJadwal === "Pertandingan"){
         url = `/manager/matches/${id}`
-      }else{
-        throw new Error("type tidak valid")
+        delete payload.start_time
+        delete payload.end_time
+      }else {
+        throw new Error("Tipe jadwal tidak valid")
       }
 
-      // Perbaikan: Kirimkan 'formEditJadwalPraktek' sebagai payload
-      await apiClient.put(url, formEditJadwalPraktek)
+      await apiClient.put(url, payload)
 
-      alert("Berhasil update jadwal praktek")
+      alert("Berhasil update jadwal")
       setOpenModalEditPraktek(false)
       setIdJadwalPraktek(null)
       setRefresh(true)
@@ -154,13 +166,16 @@ export default function ManagerContextProvider({ children }) {
   }
 
   const contextValue = {
-    // Update jadwal
+    // // Update Jadwal pertandingan
+    // setFormEditJadwalPertandingan,
+    // formEditJadwalPertandingan,
+    // Update jadwal latihan
     handleSubmitEditJadwalPraktek,
     handleOpenModalEditJadwaPraktek,
     handleCloseModalEditJadwalPraktek,
     openModalEditPraktek,
-    formEditJadwalPraktek,
-    setFormEditJadwalPraktek,
+    formEditJadwal,
+    setForomEditJadwal,
     idEditJadwalPraktek,
     // context wajib
     loading,

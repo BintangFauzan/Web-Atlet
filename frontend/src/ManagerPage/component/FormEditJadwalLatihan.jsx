@@ -10,8 +10,8 @@ export default function FormEditJadwal() {
     idEditJadwalPraktek,
     handleCloseModalEditJadwalPraktek,
     handleSubmitEditJadwalPraktek,
-    formEditJadwalPraktek,
-    setFormEditJadwalPraktek,
+    setForomEditJadwal,
+    formEditJadwal
   } = useContext(ManagerContext);
   const [dataTim, setDataTim] = useState([]);
   const fetchData = async () => {
@@ -29,18 +29,121 @@ export default function FormEditJadwal() {
     }
   };
   useEffect(() => {
-    if (idEditJadwalPraktek) {
-      setFormEditJadwalPraktek({
+    fetchData();
+    if(idEditJadwalPraktek){
+      setForomEditJadwal({
         team_id: idEditJadwalPraktek.team_id || "",
         date: idEditJadwalPraktek.date || "",
+        location: idEditJadwalPraktek.location || "",
+        // Latihan
         start_time: idEditJadwalPraktek.start_time || "",
         end_time: idEditJadwalPraktek.end_time || "",
-        location: idEditJadwalPraktek.location || "",
-      });
+        // Pertandingan
+        opponent_name: idEditJadwalPraktek.opponent_name || "",
+        time: idEditJadwalPraktek.time || ""
+      })
     }
-    fetchData();
-  }, []);
+  }, [idEditJadwalPraktek, setForomEditJadwal]);
   console.log("data id edit jadwal", idEditJadwalPraktek);
+
+  let input
+  if(idEditJadwalPraktek.type === "Latihan"){
+    input =    <div className="mb-4">
+              <label
+                htmlFor="start_time"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Waktu Mulai
+              </label>
+              <input
+                type="time"
+                id="start_time"
+                name="start_time"
+                value={formEditJadwal.start_time}
+                onChange={(e) =>
+                  setForomEditJadwal({
+                    ...formEditJadwal,
+                    start_time: e.target.value,
+                  })
+                }
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+              />
+            </div>
+
+            {/* end_time - Menggunakan type="time" sederhana */}
+            <div className="mb-4">
+              <label
+                htmlFor="end_time"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Waktu Selesai
+              </label>
+              <input
+                type="time"
+                id="end_time"
+                name="end_time"
+                value={formEditJadwal.end_time}
+                onChange={(e) =>
+                  setForomEditJadwal({
+                    ...formEditJadwal,
+                    end_time: e.target.value,
+                  })
+                }
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+              />
+            </div>
+  }else if(idEditJadwalPraktek.type === "Pertandingan"){
+      input = <>
+        <div className="mb-6">
+              <label
+                htmlFor="nama_lawan"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Nama Lawan
+              </label>
+              <input
+                type="text"
+                id="nama_lawan"
+                name="nama_lawan"
+                placeholder="Contoh: Lapangan Hijau A"
+                value={formEditJadwal.opponent_name}
+                onChange={(e) =>
+                  setForomEditJadwal({
+                    ...formEditJadwal,
+                    opponent_name: e.target.value,
+                  })
+                }
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="time"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Mulai Tanding
+              </label>
+              <input
+                type="time"
+                id="time"
+                name="time"
+                value={formEditJadwal.time}
+                onChange={(e) =>
+                  setForomEditJadwal({
+                    ...formEditJadwal,
+                    time: e.target.value,
+                  })
+                }
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+              />
+            </div>
+            
+      </>
+  }
   return (
     <>
       <>
@@ -69,10 +172,10 @@ export default function FormEditJadwal() {
               <select
                 id="team_id"
                 name="team_id"
-                value={formEditJadwalPraktek.team_id}
+                value={formEditJadwal.team_id}
                 onChange={(e) =>
-                  setFormEditJadwalPraktek({
-                    ...formEditJadwalPraktek,
+                  setForomEditJadwal({
+                    ...formEditJadwal,
                     team_id: e.target.value,
                   })
                 }
@@ -100,10 +203,10 @@ export default function FormEditJadwal() {
                 type="date"
                 id="date"
                 name="date"
-                value={formEditJadwalPraktek.date}
+                value={formEditJadwal.date}
                 onChange={(e) =>
-                  setFormEditJadwalPraktek({
-                    ...formEditJadwalPraktek,
+                  setForomEditJadwal({
+                    ...formEditJadwal,
                     date: e.target.value,
                   })
                 }
@@ -113,52 +216,7 @@ export default function FormEditJadwal() {
             </div>
 
             {/* start_time - Menggunakan type="time" sederhana */}
-            <div className="mb-4">
-              <label
-                htmlFor="start_time"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Waktu Mulai
-              </label>
-              <input
-                type="time"
-                id="start_time"
-                name="start_time"
-                value={formEditJadwalPraktek.start_time}
-                onChange={(e) =>
-                  setFormEditJadwalPraktek({
-                    ...formEditJadwalPraktek,
-                    start_time: e.target.value,
-                  })
-                }
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-              />
-            </div>
-
-            {/* end_time - Menggunakan type="time" sederhana */}
-            <div className="mb-4">
-              <label
-                htmlFor="end_time"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Waktu Selesai
-              </label>
-              <input
-                type="time"
-                id="end_time"
-                name="end_time"
-                value={formEditJadwalPraktek.end_time}
-                onChange={(e) =>
-                  setFormEditJadwalPraktek({
-                    ...formEditJadwalPraktek,
-                    end_time: e.target.value,
-                  })
-                }
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-              />
-            </div>
+          {input}
 
             {/* location */}
             <div className="mb-6">
@@ -173,10 +231,10 @@ export default function FormEditJadwal() {
                 id="location"
                 name="location"
                 placeholder="Contoh: Lapangan Hijau A"
-                value={formEditJadwalPraktek.location}
+                value={formEditJadwal.location}
                 onChange={(e) =>
-                  setFormEditJadwalPraktek({
-                    ...formEditJadwalPraktek,
+                  setForomEditJadwal({
+                    ...formEditJadwal,
                     location: e.target.value,
                   })
                 }
