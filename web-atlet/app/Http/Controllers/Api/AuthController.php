@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -58,6 +59,62 @@ class AuthController extends Controller
             ],
             'token' => $token,
         ], 201);
+    }
+
+    public function update($id, Request $request){
+        $user = User::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                Rule::unique('users')->ignore($user->id), // Abaikan email pengguna saat ini
+            ],
+            'password' => 'required', // Password opsional, minimal 8 karakter jika diisi
+            'role' => 'required|in:manager,coach,athlete', 
+            'team_id' => 'nullable|exists:teams,id', 
+        ]);
+        
+        // Aturan Khusus Team ID:
+        if ($validatedData['role'] !== 'manager' && !$request->team_id) {
+            // Atlet/Pelatih wajib memiliki team_id
+             return response()->json(['message' => 'Atlet dan Pelatih harus terikat pada Team ID.'], 422);
+        }
+        
+        // Siapkan data untuk diupdate
+        $updateData = [
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'role' => $validatedData['role'],
+            // Terapkan logika team_id
+            'team_id' => $validatedData['role'] === 'manager' ? null : $request->team_id,
+        ];
+
+        // Hanya update password jika ada input baru
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Berhasil update data pengguna',
+            'data' => $user
+        ]);
+        
+    }
+
+    public function deleteUser($id){
+        $user = User::findOrFail($id);
+        $user->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'berhasil hapus user',
+            'data' => $user
+        ]);
     }
     public function login(Request $request)
     {

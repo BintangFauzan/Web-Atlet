@@ -7,6 +7,9 @@ export default function ScheduleManagementTable({
   setScheduleTeamFilter,
   handleAddSchedule,
   scheduleRef,
+  onHapus,
+  handleAddScheduleMatch,
+  clickEditJadwalPraktek
 }) {
   return (
     <>
@@ -32,7 +35,13 @@ export default function ScheduleManagementTable({
               onClick={handleAddSchedule}
               className="flex items-center px-3 py-2 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition"
             >
-              <Calendar className="w-4 h-4 mr-1" /> Tambah Jadwal
+              <Calendar className="w-4 h-4 mr-1" /> Tambah Jadwal Latihan
+            </button>
+            <button
+              onClick={handleAddScheduleMatch}
+              className="flex items-center px-3 py-2 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition"
+            >
+              <Calendar className="w-4 h-4 mr-1" /> Tambah Jadwal Pertandingan
             </button>
           </div>
         </div>
@@ -91,10 +100,10 @@ export default function ScheduleManagementTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1">
+                      <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1" onClick={() => clickEditJadwalPraktek(item)}>
                         <Edit className="w-5 h-5" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900 p-1">
+                      <button className="text-red-600 hover:text-red-900 p-1" onClick={() => onHapus(item)}>
                         <Trash2 className="w-5 h-5" />
                       </button>
                     </td>

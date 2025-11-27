@@ -42,6 +42,8 @@ export default function FormInput({ onSuccess, onClose }) {
     fetchData();
   }, []);
 
+  console.log("Tambah Pengguna", form)
+
   return (
     <>
       <>

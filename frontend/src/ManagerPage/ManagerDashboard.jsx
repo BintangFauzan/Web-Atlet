@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import apiClient from "../services/apiClien";
@@ -8,16 +8,33 @@ import UserManagementTable from "./component/UserManagementTable";
 import TeamManagementTable from "./component/TeamManagementTable";
 import ScheduleManagementTable from "./component/ScheduleManagementTable";
 import TeamDetailModal from "./component/TeamDetailModal";
-import { Users, Trello, Calendar, Zap, UserPlus, Edit, Trash2, Loader2, MapPin } from 'lucide-react';
+import {
+  Users,
+  Trello,
+  Calendar,
+  Zap,
+  UserPlus,
+  Edit,
+  Trash2,
+  Loader2,
+  MapPin,
+} from "lucide-react";
 import { Modal } from "../ui/ModalDialog";
 import FormInput from "./component/FormInput";
 import FormTambahTim from "./component/FormTambahTim";
 import FormTambahJadwal from "./component/FormTambahJadwal";
+import Button from "../ui/Button";
+import HapusJadwal from "./component/HapusJadwal";
+import FormTambahJadwalPertandingan from "./component/FormTambahJadwalPertandingan";
+import { ManagerContext } from "../context/ManagerContext";
+import HapusTim from "./component/HapusTim";
+import FormEditUser from "./component/FormEditUser";
+import FormEditJadwal from "./component/FormEditJadwalLatihan";
 
 export default function ManagerDashboard() {
   const [dashboardData, setDashboardData] = useState({
     // ... (State Data Dibiarkan)
-    manager_name: '',
+    manager_name: "",
     total_teams: 0,
     teams_data: [],
     all_users: [],
@@ -28,36 +45,66 @@ export default function ManagerDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openModalHapus, setOpenModalHapus] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null); // Ganti state untuk menyimpan objek lengkap
+  const [openModaJadwal, setOpenModalJadwal] = useState(false);
   // State Tambah Pengguna
-  const [modalTambah, setModalTambah] = useState(false)
+  const [modalTambah, setModalTambah] = useState(false);
   // State Tambah Tim
-  const [modalTambahTim, setModalTambahTim] = useState(false)
+  const [modalTambahTim, setModalTambahTim] = useState(false);
   // State Tambah Jadwal
-  const [modalTambahJadwal, setModalTambahJadwal] = useState(false)
-  const [refresh, setRefresh] = useState(false)
-  
+  const [modalTambahJadwal, setModalTambahJadwal] = useState(false);
+
   // STATE UNTUK FILTER
-  const [userRoleFilter, setUserRoleFilter] = useState('all');
-  const [scheduleTeamFilter, setScheduleTeamFilter] = useState('all');
-  
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [scheduleTeamFilter, setScheduleTeamFilter] = useState("all");
+
   // STATE UNTUK MODAL DETAIL TIM
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  
-  const navigate = useNavigate();
 
   // REFERENSI UNTUK SCROLLING
   const usersRef = useRef(null);
   const teamsRef = useRef(null);
-  const scheduleRef = useRef(null); 
+  const scheduleRef = useRef(null);
+// Context Manager
+  const {
+    openModalHapusTim,
+    refresh,
+    idHapusTim,
+    submitHapusTim,
+    handleOpenModalHapusTim,
+    handleCloseModalHapusTim,
+    setRefresh,
+    handleOpenModalHapusPengguna,
+    closeModalHapusPengguna,
+    submitHapusPengguna,
+    openModalHapusPengguna,
+    // Edit pengguna
+    handleOpenModalEditPengguna,
+    closeModalEditPengguna,
+    openModalEditPengguna,
+    // Edit jadwal praktek
+    openModalEditPraktek,
+    handleCloseModalEditJadwalPraktek,
+    handleOpenModalEditJadwaPraktek
+  } = useContext(ManagerContext);
+
+  console.log("Id hapus team", idHapusTim)
 
   // Fungsi utilitas dipertahankan di sini
   const getRoleBadge = (role) => {
     switch (role) {
-      case 'manager': return 'bg-red-100 text-red-800';
-      case 'coach': case 'pelatih': return 'bg-yellow-100 text-yellow-800';
-      case 'athlete': case 'atlet': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "manager":
+        return "bg-red-100 text-red-800";
+      case "coach":
+      case "pelatih":
+        return "bg-yellow-100 text-yellow-800";
+      case "athlete":
+      case "atlet":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -66,77 +113,122 @@ export default function ManagerDashboard() {
     // ... (Logika fetch data yang panjang)
     setLoading(true);
     setError(null);
+    const token = localStorage.getItem("AuthToken")
+    if(!token){
+      setError("Autentikasi gagal silahkan login lagi")
+      setLoading(false)
+      return;
+    }
     try {
-      const response = await apiClient.get('/manager/dashboard'); 
+      const response = await apiClient.get("/manager/dashboard");
       const apiData = response.data;
-      
+
       let allUsers = [];
       let allSchedules = [];
 
-      apiData.teams_data.forEach(team => {
-        const teamMembers = team.members.map(member => ({
-          ...member, team_name: team.name, team_id: team.id, 
+      apiData.teams_data.forEach((team) => {
+        const teamMembers = team.members.map((member) => ({
+          ...member,
+          team_name: team.name,
+          team_id: team.id,
         }));
         allUsers.push(...teamMembers);
 
-        team.practices.forEach(p => {
-            allSchedules.push({
-                ...p, type: 'Latihan', team_name: team.name, 
-                datetime: moment(`${p.date.split('T')[0]} ${p.start_time}`), id: `practice-${p.id}`, 
-            });
+        team.practices.forEach((p) => {
+          allSchedules.push({
+            ...p,
+            type: "Latihan",
+            team_name: team.name,
+            datetime: moment(`${p.date.split("T")[0]} ${p.start_time}`),
+            id: `practice-${p.id}`,
+          });
         });
-        
-        team.matches.forEach(m => {
-             allSchedules.push({
-                ...m, type: 'Pertandingan', team_name: team.name, opponent: m.opponent_name,
-                datetime: moment(`${m.date.split('T')[0]} ${m.time}`), id: `match-${m.id}`, 
-            });
+
+        team.matches.forEach((m) => {
+          allSchedules.push({
+            ...m,
+            type: "Pertandingan",
+            team_name: team.name,
+            opponent: m.opponent_name,
+            datetime: moment(`${m.date.split("T")[0]} ${m.time}`),
+            id: `match-${m.id}`,
+          });
         });
       });
-      
+
       const managerUser = {
-          id: 0, name: apiData.manager_name, email: 'manager_email@app.com', role: 'manager', team_name: 'Manajemen',
+        id: 0,
+        name: apiData.manager_name,
+        email: "manager_email@app.com",
+        role: "manager",
+        team_name: "Manajemen",
       };
-      if (!allUsers.find(u => u.role === 'manager')) {
-          allUsers.unshift(managerUser);
+      if (!allUsers.find((u) => u.role === "manager")) {
+        allUsers.unshift(managerUser);
       } else {
-          const existingManager = allUsers.find(u => u.role === 'manager');
-          if (existingManager) existingManager.name = apiData.manager_name;
+        const existingManager = allUsers.find((u) => u.role === "manager");
+        if (existingManager) existingManager.name = apiData.manager_name;
       }
-      
+
       allSchedules.sort((a, b) => a.datetime.valueOf() - b.datetime.valueOf());
 
       setDashboardData({
-        ...apiData, all_users: allUsers, all_schedules: allSchedules, total_users: allUsers.length,
-        total_matches: allSchedules.filter(s => s.type === 'Pertandingan').length,
-        total_practices: allSchedules.filter(s => s.type === 'Latihan').length,
+        ...apiData,
+        all_users: allUsers,
+        all_schedules: allSchedules,
+        total_users: allUsers.length,
+        total_matches: allSchedules.filter((s) => s.type === "Pertandingan")
+          .length,
+        total_practices: allSchedules.filter((s) => s.type === "Latihan")
+          .length,
       });
-      setRefresh(false)
+      setRefresh(false);
     } catch (err) {
-      console.error("Gagal memuat dashboard:", err);
-      setError(`Gagal memuat data dashboard: ${err.message}.`);
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          // Hapus semua data sesi yang tersimpan
+          localStorage.removeItem("AuthToken");
+          localStorage.removeItem("DataUser");
+          localStorage.removeItem("IdUser");
+          localStorage.removeItem("UserRole");
+
+          // Paksa pengguna kembali ke halaman login untuk sesi baru
+          // Menggunakan window.location.href memastikan state aplikasi di-reset total
+          window.location.href = '/';
+          return; // Hentikan eksekusi lebih lanjut
+        } // Penanganan untuk error lainnya
+        if (err.response && err.response.data && err.response.data.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Gagal mengambil data dashboard. Periksa koneksi Anda.");
+        }
+        console.error("Error fetching dashboard:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboardData(); 
+    fetchDashboardData();
   }, [refresh]);
-  
+
   // LOGIKA FILTER (useMemo) - Tidak Berubah
   const filteredUsers = useMemo(() => {
-    return dashboardData.all_users.filter(user => userRoleFilter === 'all' ? true : user.role === userRoleFilter);
+    return dashboardData.all_users.filter((user) =>
+      userRoleFilter === "all" ? true : user.role === userRoleFilter
+    );
   }, [dashboardData.all_users, userRoleFilter]);
-  
-  const filteredSchedules = useMemo(() => {
-    return dashboardData.all_schedules.filter(schedule => scheduleTeamFilter === 'all' ? true : schedule.team_name === scheduleTeamFilter);
-  }, [dashboardData.all_schedules, scheduleTeamFilter]);
 
+  const filteredSchedules = useMemo(() => {
+    return dashboardData.all_schedules.filter((schedule) =>
+      scheduleTeamFilter === "all"
+        ? true
+        : schedule.team_name === scheduleTeamFilter
+    );
+  }, [dashboardData.all_schedules, scheduleTeamFilter]);
 
   // FUNGSI UNTUK MODAL (useCallback) - Tidak Berubah
   const handleViewTeamDetails = useCallback((team) => {
-    setSelectedTeam(team); 
+    setSelectedTeam(team);
     setIsModalOpen(true);
   }, []);
 
@@ -145,103 +237,268 @@ export default function ManagerDashboard() {
     setSelectedTeam(null);
   }, []);
 
-
   // Handler Modal Tambah Pengguna
-  function handleOpenModalTambah(){
-    setModalTambah(true)
+  function handleOpenModalTambah() {
+    setModalTambah(true);
   }
-  function handleCloseModalTambah(){
-    setModalTambah(false)
+  function handleCloseModalTambah() {
+    setModalTambah(false);
   }
-  function handleSuccesTambah(){
-    setModalTambah(false)
-    setRefresh(true)
+  function handleSuccesTambah() {
+    setModalTambah(false);
+    setRefresh(true);
   }
   // Handle Modal Tambah Tim
-  function openModalTambahTim(){
-    setModalTambahTim(true)
+  function openModalTambahTim() {
+    setModalTambahTim(true);
   }
-  function closeModalTim(){
-    setModalTambahTim(false)
+  function closeModalTim() {
+    setModalTambahTim(false);
   }
-  function handleSuccesInputTim(){
-    setModalTambahTim(false)
-    setRefresh(true)
+  function handleSuccesInputTim() {
+    setModalTambahTim(false);
+    setRefresh(true);
   }
-  // Handle Modal Tambah Jadwal
-  function openModalTambahJadwal(){
-    setModalTambahJadwal(true)
+  // Handle Modal Jadwal Latihan
+  function openModalTambahJadwal() {
+    setModalTambahJadwal(true);
   }
-  function closeModalJadwal(){
-    setModalTambahJadwal(false)
+  function closeModalJadwal() {
+    setModalTambahJadwal(false);
   }
-  function handleSuccesInputJadwal(){
-    setModalTambahJadwal(false)
-    setRefresh(true)
+  function handleSuccesInputJadwal() {
+    setModalTambahJadwal(false);
+    setRefresh(true);
   }
+  // Handle Modal Hapus Latihan
+  function handleOpenModalHapusJadwalLatihan(item) {
+    setOpenModalHapus(true);
+    setSelectedSchedule(item); // Simpan seluruh objek item
+  }
+  function handleCloseModalHapusJadwalLatihan() {
+    setOpenModalHapus(false);
+    setSelectedSchedule(null);
+    setRefresh(false);
+  }
+  function handleSuccesHapus() {
+    setOpenModalHapus(false);
+    setSelectedSchedule(null);
+    setRefresh(true);
+  }
+  // Handle Open Modal Jadwal Pertandingan
+  function handleOpenModalJadwalPertandingan() {
+    setOpenModalJadwal(true);
+  }
+  function handleCloseModalJadwalPertandingan() {
+    setOpenModalJadwal(false);
+  }
+  function handleSuccesTambahPertandingan() {
+    setOpenModalJadwal(false);
+    setRefresh(true);
+  }
+  const handleSumbitHapusJadwalLatihan = async () => {
+    setLoading(true);
+    try {
+      if (!selectedSchedule) return;
 
-  if (loading) return <div className="text-center p-10"><Loader2 className="animate-spin w-6 h-6 mx-auto text-blue-600 mb-2" /> Memuat Dashboard Manager...</div>;
-  if (error) return <div className="text-center p-10 text-red-600 bg-red-100 border border-red-200 rounded-xl">{error}</div>;
+      const { type, id } = selectedSchedule;
+      const numericId = id.split("-")[1]; // Dapatkan ID numerik (misal: 5 dari "practice-5")
+
+      let url = "";
+      if (type === "Latihan") {
+        url = `/manager/practice/${numericId}`;
+      } else if (type === "Pertandingan") {
+        url = `/manager/matches/${numericId}`; // URL untuk hapus pertandingan
+      }
+
+      await apiClient.delete(url);
+      alert(`Berhasil hapus jadwal ${type}`);
+      handleSuccesHapus(); // Panggil fungsi sukses untuk menutup modal & refresh
+    } catch (err) {
+      alert(
+        `Gagal hapus jadwal: ${err.response?.data?.message || err.message}`
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // console.log("Data manager", dashboardData);
+  console.log("Token", localStorage.getItem("AuthToken"));
+
+  if (loading)
+    return (
+      <div className="text-center p-10">
+        <Loader2 className="animate-spin w-6 h-6 mx-auto text-blue-600 mb-2" />{" "}
+        Memuat Dashboard Manager...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="text-center p-10 text-red-600 bg-red-100 border border-red-200 rounded-xl">
+        {error}
+      </div>
+    );
 
   return (
-   <>
-   <Modal isOpen={modalTambah} className="max-w-xl p-6" onClose={handleCloseModalTambah}>
-    <FormInput onSuccess={handleSuccesTambah} onClose={handleCloseModalTambah}/>
-   </Modal>
-   {/* Modal Tambah Tim */}
-   <Modal isOpen={modalTambahTim} className="max-w-xl p-6" onClose={closeModalTim}>
-   <FormTambahTim onSucces={handleSuccesInputTim} onClose={closeModalTim}/>
-   </Modal>
-   {/* Modal Tambah Jadwal */}
-   <Modal className="max-w-xl p-6" isOpen={modalTambahJadwal} onClose={closeModalJadwal}>
-    <FormTambahJadwal onSucces={handleSuccesInputJadwal} onClose={closeModalJadwal}/>
-   </Modal>
-     <div className="space-y-10 p-4 sm:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold text-gray-800">Selamat datang, {dashboardData.manager_name}!</h1>
-      
-      {/* STAT CARDS (Sangat Bersih) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Pengguna" value={dashboardData.total_users} icon={Users} color="bg-purple-600" targetRef={usersRef} />
-        <StatCard title="Total Tim Aktif" value={dashboardData.total_teams} icon={Trello} color="bg-teal-600" targetRef={teamsRef} />
-        <StatCard title="Total Pertandingan" value={dashboardData.total_matches} icon={Calendar} color="bg-orange-600" targetRef={scheduleRef} />
-        <StatCard title="Total Latihan" value={dashboardData.total_practices} icon={Zap} color="bg-indigo-600" targetRef={scheduleRef} />
+    <>
+    {/* Modal tambah pengguna */}
+      <Modal
+        isOpen={modalTambah}
+        className="max-w-xl p-6"
+        onClose={handleCloseModalTambah}
+      >
+        <FormInput
+          onSuccess={handleSuccesTambah}
+          onClose={handleCloseModalTambah}
+        />
+      </Modal>
+      {/* Modal Edit Pengguna */}
+      <Modal isOpen={openModalEditPengguna} onClose={closeModalEditPengguna} className="max-w-xl p-6">
+      <FormEditUser onClose={closeModalEditPengguna}/>
+      </Modal>
+      {/* Modal hapus pengguna */}
+      <Modal isOpen={openModalHapusPengguna} onClose={closeModalHapusPengguna} className="max-w-xl p-6">
+        <div className="justify-center items-center p-5 m-5">
+                 <h2 className="text-center text-lg font-medium">Apa anda yakin ingin menghapus pengguna ini?</h2>
+                 <div className="items-center flex justify-center space-x-4 mt-4">
+                    <Button onClick={submitHapusPengguna}>Hapus</Button>
+                    <Button onClick={closeModalHapusPengguna}>Batal</Button>
+                 </div>
+            </div>
+      </Modal>
+      {/* Modal Tambah Tim */}
+      <Modal
+        isOpen={modalTambahTim}
+        className="max-w-xl p-6"
+        onClose={closeModalTim}
+      >
+        <FormTambahTim
+          onSucces={handleSuccesInputTim}
+          onClose={closeModalTim}
+        />
+      </Modal>
+      {/* Modal Hapus Tim */}
+      <HapusTim
+        openModalHapusTim={openModalHapusTim}
+        handleCloseModalHapusTim={handleCloseModalHapusTim}
+        submitHapusTim={submitHapusTim}
+      />
+      {/* Modal Tambah Jadwal Latihan */}
+      <Modal
+        className="max-w-xl p-6"
+        isOpen={modalTambahJadwal}
+        onClose={closeModalJadwal}
+      >
+        <FormTambahJadwal
+          onSucces={handleSuccesInputJadwal}
+          onClose={closeModalJadwal}
+        />
+      </Modal>
+      {/* Modal edit jadwal latihan */}
+      <Modal className="max-w-xl p-6" isOpen={openModalEditPraktek} onClose={handleCloseModalEditJadwalPraktek}>
+      <FormEditJadwal/>
+      </Modal>
+      {/* Modal Tambah Jadwal Pertandingan */}
+      <Modal
+        className="max-w-xl p-6"
+        isOpen={openModaJadwal}
+        onClose={handleCloseModalJadwalPertandingan}
+      >
+        <FormTambahJadwalPertandingan
+          onSucces={handleSuccesTambahPertandingan}
+          onClose={handleCloseModalJadwalPertandingan}
+        />
+      </Modal>
+      {/* Modal Hapus Jadwal Latihan */}
+      <Modal
+        className="max-w-xl p-6"
+        isOpen={openModalHapus}
+        onClose={handleCloseModalHapusJadwalLatihan}
+      >
+        <HapusJadwal
+          onClick={handleSumbitHapusJadwalLatihan}
+          onClose={handleCloseModalHapusJadwalLatihan}
+        />
+      </Modal>
+      <div className="space-y-10 p-4 sm:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Selamat datang, {dashboardData.manager_name}!
+        </h1>
+
+        {/* STAT CARDS (Sangat Bersih) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Pengguna"
+            value={dashboardData.total_users}
+            icon={Users}
+            color="bg-purple-600"
+            targetRef={usersRef}
+          />
+          <StatCard
+            title="Total Tim Aktif"
+            value={dashboardData.total_teams}
+            icon={Trello}
+            color="bg-teal-600"
+            targetRef={teamsRef}
+          />
+          <StatCard
+            title="Total Pertandingan"
+            value={dashboardData.total_matches}
+            icon={Calendar}
+            color="bg-orange-600"
+            targetRef={scheduleRef}
+          />
+          <StatCard
+            title="Total Latihan"
+            value={dashboardData.total_practices}
+            icon={Zap}
+            color="bg-indigo-600"
+            targetRef={scheduleRef}
+          />
+        </div>
+
+        {/* --- PANGGIL KOMPONEN-KOMPONEN BARU --- */}
+        <UserManagementTable
+          filteredUsers={filteredUsers}
+          userRoleFilter={userRoleFilter}
+          setUserRoleFilter={setUserRoleFilter}
+          handleAddUser={handleOpenModalTambah}
+          getRoleBadge={getRoleBadge}
+          usersRef={usersRef}
+          clikHapusPengguna={handleOpenModalHapusPengguna}
+          clickEditPengguna={handleOpenModalEditPengguna}
+        />
+
+        <TeamManagementTable
+          teams={dashboardData.teams_data}
+          handleAddTeam={openModalTambahTim}
+          handleViewTeamDetails={handleViewTeamDetails}
+          teamsRef={teamsRef}
+          clickHapusTim={handleOpenModalHapusTim}
+        />
+
+        <ScheduleManagementTable
+          filteredSchedules={filteredSchedules}
+          teamsData={dashboardData.teams_data}
+          scheduleTeamFilter={scheduleTeamFilter}
+          setScheduleTeamFilter={setScheduleTeamFilter}
+          handleAddSchedule={openModalTambahJadwal}
+          scheduleRef={scheduleRef}
+          onHapus={handleOpenModalHapusJadwalLatihan}
+          handleAddScheduleMatch={handleOpenModalJadwalPertandingan}
+          clickEditJadwalPraktek={handleOpenModalEditJadwaPraktek}
+        />
+
+        {/* Panggil Modal di akhir komponen */}
+        <TeamDetailModal
+          teamData={selectedTeam}
+          allUsers={dashboardData.all_users}
+          allSchedules={dashboardData.all_schedules}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
       </div>
-
-      {/* --- PANGGIL KOMPONEN-KOMPONEN BARU --- */}
-      <UserManagementTable
-        filteredUsers={filteredUsers}
-        userRoleFilter={userRoleFilter}
-        setUserRoleFilter={setUserRoleFilter}
-        handleAddUser={handleOpenModalTambah}
-        getRoleBadge={getRoleBadge}
-        usersRef={usersRef}
-      />
-      
-      <TeamManagementTable
-        teams={dashboardData.teams_data}
-        handleAddTeam={openModalTambahTim}
-        handleViewTeamDetails={handleViewTeamDetails}
-        teamsRef={teamsRef}
-      />
-      
-      <ScheduleManagementTable
-        filteredSchedules={filteredSchedules}
-        teamsData={dashboardData.teams_data}
-        scheduleTeamFilter={scheduleTeamFilter}
-        setScheduleTeamFilter={setScheduleTeamFilter}
-        handleAddSchedule={openModalTambahJadwal}
-        scheduleRef={scheduleRef}
-      />
-
-      {/* Panggil Modal di akhir komponen */}
-      <TeamDetailModal 
-        teamData={selectedTeam} 
-        allUsers={dashboardData.all_users}
-        allSchedules={dashboardData.all_schedules}
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal}
-      />
-    </div>
-   </>
+    </>
   );
 }

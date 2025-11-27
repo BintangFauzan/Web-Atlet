@@ -39,7 +39,7 @@ export default function PrivateRoute() {
     return <Navigate to="/" replace />;
 
   // Cek role akses halaman
-  const userRole = localStorage.getItem("UserRole"); // Perbaikan: getItem bukan get
+  const userRole = localStorage.getItem("UserRole"); 
   const currentPath = location.pathname.toLowerCase();
   
   const isCoachRoute = currentPath.startsWith("/coach-dashboard");
