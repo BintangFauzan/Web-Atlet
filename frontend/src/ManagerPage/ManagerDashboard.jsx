@@ -30,6 +30,7 @@ import { ManagerContext } from "../context/ManagerContext";
 import HapusTim from "./component/HapusTim";
 import FormEditUser from "./component/FormEditUser";
 import FormEditJadwal from "./component/FormEditJadwalLatihan";
+import CaborManagementTable from "./component/CaborManagementTable";
 
 export default function ManagerDashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -469,6 +470,8 @@ export default function ManagerDashboard() {
           clikHapusPengguna={handleOpenModalHapusPengguna}
           clickEditPengguna={handleOpenModalEditPengguna}
         />
+
+        <CaborManagementTable/>
 
         <TeamManagementTable
           teams={dashboardData.teams_data}

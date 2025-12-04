@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AthleteController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CaborController;
 use App\Http\Controllers\Api\CoachController;
 use App\Http\Controllers\Api\ManagerController;
 use App\Http\Controllers\Api\MatchController;
@@ -47,6 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put("user/{id}", [AuthController::class, 'update']);
         // Delete User
         Route::delete('user/{id}', [AuthController::class, 'deleteUser']);
+
+        // Cabor
+        Route::get('cabor', [CaborController::class, 'index']);
+        Route::post('cabor', [CaborController::class, 'store']);
+        Route::put('cabor/{id}', [CaborController::class, 'update']);
+        Route::delete('cabor/{id}', [CaborController::class, 'destroy']);
 
         // Tim
         Route::post('teams', [ManagerController::class, 'storeTeam']);
