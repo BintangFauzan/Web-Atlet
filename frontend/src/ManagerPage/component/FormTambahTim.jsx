@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import apiClient from "../../services/apiClien";
 
 export default function FormTambahTim({ onSucces, onClose }) {
-  const [name, setName] = useState(""); // 1. State diinisialisasi sebagai string kosong
+  const [form, setForm] = useState({
+    name:"",
+    cabor_id:""
+  }); 
   const [loading, setLoading] = useState(false);
+  const [cabor, setCabor] = useState([])
 
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
     try {
-      // 2. Kirim data sebagai objek sesuai format API
-      await apiClient.post("/manager/teams", { name: name });
+      // Kirim seluruh objek 'form' yang sudah berisi name dan cabor_id
+      await apiClient.post("/manager/teams", form);
       console.log("Berhasil input team");
       alert("Berhasil tambah tim!");
       if (onSucces) onSucces();
@@ -22,6 +26,22 @@ export default function FormTambahTim({ onSucces, onClose }) {
       setLoading(false);
     }
   };
+
+  const fetchData = async () => {
+    setLoading(true)
+    try{
+      const res = await apiClient.get("/manager/cabor")
+      const data = res.data.data.data
+      setCabor(data)
+    }catch(err){
+      console.log("Error ambil data" , err.response ? err.response.data : err.message)
+    }finally{
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    fetchData()
+  },[])
 
   return (
     <>
@@ -38,7 +58,7 @@ export default function FormTambahTim({ onSucces, onClose }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 1. Nama Tim */}
-          <div>
+          <div className="mb-4">
             <label
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -48,12 +68,35 @@ export default function FormTambahTim({ onSucces, onClose }) {
             <input
               type="text"
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)} // 3. Update state langsung
+              value={form.name}
+              onChange={(e) => setForm({...form, name: e.target.value})} // 3. Update state langsung
               required
               placeholder="Masukkan nama tim"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
             />
+          </div>
+           <div className="mb-4">
+            <label
+              htmlFor="team_id"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Pilih Cabor
+            </label>
+            <select
+              id="team_id"
+              name="team_id"
+              value={form.cabor_id}
+              onChange={(e) => setForm({ ...form, cabor_id: e.target.value })}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+            >
+              <option value="">Pilih Cabor...</option>
+              {cabor.map((caborTim) => (
+                <option key={caborTim.id} value={caborTim.id}>
+                  {caborTim.nama_cabor}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Tombol Submit */}

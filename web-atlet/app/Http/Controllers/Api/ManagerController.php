@@ -31,10 +31,13 @@ class ManagerController extends Controller
     }
     public function storeTeam(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255|unique:teams,name']);
+        $request->validate(['name' => 'required|string|max:255|unique:teams,name', 
+    'cabor_id' => 'required'
+    ]);
 
         $team = Team::create([
             'name' => $request->name,
+            'cabor_id'=> $request->cabor_id,
             'manager_id' => Auth::id(), // Langsung dari Manager yang sedang login
         ]);
 

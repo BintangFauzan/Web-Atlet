@@ -10,6 +10,7 @@ class Team extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'cabor_id',
         'manager_id',
     ];
 
@@ -27,5 +28,9 @@ class Team extends Model
 
     public function matches(){
         return $this->hasMany(Matche::class);
+    }
+
+    public function cabor(){
+        return $this->belongsTo(Cabor::class,'cabor_id');
     }
 }
