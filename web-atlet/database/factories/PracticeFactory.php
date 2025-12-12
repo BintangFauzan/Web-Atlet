@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,11 +17,17 @@ class PracticeFactory extends Factory
      */
     public function definition(): array
     {
+        // 1. Buat waktu mulai secara acak
+        $startTime = fake()->time('H:i:s');
+        // 2. Buat waktu selesai dengan menambahkan 1-2 jam dari waktu mulai
+        $endTime = date('H:i:s', strtotime($startTime) + fake()->numberBetween(1, 2) * 3600);
+
        return [
-            // Tambahkan semua kolom yang wajib diisi (NOT NULL)
-            'start_time' => '19:00:00', // Waktu Mulai default
-            'end_time' => '21:00:00',   // Waktu Selesai default
-            'location' => fake()->address(), // Lokasi dummy
+            'team_id' => Team::all()->random()->id, // Lebih efisien
+            'date' => fake()->dateTimeBetween('now', '+1 month')->format('Y-m-d'), // Tanggal acak 1 bulan ke depan
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'location' => fake()->streetAddress(), // Lebih cocok untuk lokasi latihan
         ];
     }
 }

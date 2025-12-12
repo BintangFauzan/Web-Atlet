@@ -227,6 +227,8 @@ export default function ManagerDashboard() {
     );
   }, [dashboardData.all_schedules, scheduleTeamFilter]);
 
+  console.log('Data dashboard', dashboardData)
+
   // FUNGSI UNTUK MODAL (useCallback) - Tidak Berubah
   const handleViewTeamDetails = useCallback((team) => {
     setSelectedTeam(team);
@@ -460,7 +462,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* --- PANGGIL KOMPONEN-KOMPONEN BARU --- */}
-        <UserManagementTable
+        {/* <UserManagementTable
           filteredUsers={filteredUsers}
           userRoleFilter={userRoleFilter}
           setUserRoleFilter={setUserRoleFilter}
@@ -469,7 +471,7 @@ export default function ManagerDashboard() {
           usersRef={usersRef}
           clikHapusPengguna={handleOpenModalHapusPengguna}
           clickEditPengguna={handleOpenModalEditPengguna}
-        />
+        /> */}
 
         <CaborManagementTable/>
 

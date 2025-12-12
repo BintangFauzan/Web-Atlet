@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Cabor;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,6 +20,11 @@ class TeamFactory extends Factory
     {
         return [
             'name' => fake()->unique()->city() . ' FC',
+            // Mengambil ID cabor secara acak. Pastikan tabel cabor sudah terisi.
+            'cabor_id' => Cabor::all()->random()->id,
+            // Mengambil ID dari satu akun manager yang sudah terdaftar.
+            // Pastikan ada user dengan role 'manager' sebelum menjalankan seeder.
+            'manager_id' => User::where('role', 'manager')->first()->id,
         ];
     }
 }

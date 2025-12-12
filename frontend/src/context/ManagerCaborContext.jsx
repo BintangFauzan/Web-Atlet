@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import apiClient from "../services/apiClien";
 
 export const CaborContext = createContext()
@@ -14,6 +14,7 @@ export default function ManagerCaborContext({children}){
     const [id, setId] = useState("")
     const [openModalHapusCabor, setOpenModalHapusCabor] = useState(false)
     const [openModalEditCabor, setOpenModalEditCabor] = useState(false)
+    const [selectedTeamFilter, setSelectedTeamFilter] = useState("all")
 
     const fetchDataCabor = async () => {
        try{
@@ -95,6 +96,24 @@ export default function ManagerCaborContext({children}){
         }
     }
 
+    // const allTeam = dataCabor.map(tim => {
+    //     return tim.team; 
+    // }).flat()
+
+    //Tampilkan cabor mana yang memiliki tim dengan ID yang dipilih 
+    // const filteredDataCabor = useMemo(() => {
+    //     const filterIdCabor = selectedTeamFilter === "all" ? "all" : selectedTeamFilter
+    //     if(filterIdCabor === "all"){
+    //         return dataCabor
+    //     }else{
+    //         return dataCabor.filter((cabor) => 
+    //             cabor.team.some(team => {
+    //                 return team.id == filterIdCabor
+    //             })
+    //         )
+    //     }
+    // },[dataCabor, selectedTeamFilter])
+
     const contextValue = {
         dataCabor,
         loading,
@@ -116,6 +135,10 @@ export default function ManagerCaborContext({children}){
         handleCloseModalEditCabor,
         submitEditCabor,
         openModalEditCabor,
+        // Filter cabor
+        // allTeam,
+        // filteredDataCabor,
+        setSelectedTeamFilter
     }
 
     return(
