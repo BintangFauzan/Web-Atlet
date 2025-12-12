@@ -1,4 +1,5 @@
 import { Calendar, Edit, MapPin, Trash2 } from "lucide-react";
+import Button from "../../ui/Button";
 
 export default function ScheduleManagementTable({
   filteredSchedules,
@@ -120,6 +121,29 @@ export default function ScheduleManagementTable({
                 </tr>
               )}
             </tbody>
+             <div className="flex justify-between items-center mt-4">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Halaman dari
+            </span>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                // onClick={handlePrevPage}
+                // disabled={pagination.currentPage <= 1 || loading}
+              >
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                // onClick={handleNextPage}
+                // disabled={
+                //   pagination.currentPage >= pagination.lastPage || loading
+                // }
+              >
+                Next
+              </Button>
+            </div>
+          </div>
           </table>
         </div>
       </div>

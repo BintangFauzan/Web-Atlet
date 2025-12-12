@@ -21,6 +21,12 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        $this->call(TestDataSeeder::class);
+        // $this->call(TestDataSeeder::class);
+        $this->call(CaborSeeder::class);
+        $this->call(TeamSeeder::class); // Membuat tim terlebih dahulu
+        $this->call(UserSeeder::class); // Kemudian membuat user (pelatih & atlet) untuk tim tersebut
+        $this->call(PracticeSeeder::class);
+        $this->call(MatchSeeder::class);
+
     }
 }

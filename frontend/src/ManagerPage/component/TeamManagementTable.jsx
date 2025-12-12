@@ -1,6 +1,18 @@
 import { Edit, Trash2, Trello } from "lucide-react";
+import { useContext, useMemo, useState } from "react";
+import { CaborContext } from "../../context/ManagerCaborContext";
 
 export default function TeamManagementTable({ teams, handleAddTeam, handleViewTeamDetails, teamsRef, clickHapusTim }){
+    const {dataCabor} = useContext(CaborContext)
+    const [selectedCaborFilter, setSelectedCaborFilter] = useState("all")
+
+    // Filter team yang sesuai dengan cabor yang dipilihkan
+    const filteredTeams = useMemo(() => {
+        if(selectedCaborFilter === "all"){
+            return teams;
+        }
+        return teams.filter(team => team.cabor_id === parseInt(selectedCaborFilter))
+    }, [teams, selectedCaborFilter])
     return(
         <>
             <div ref={teamsRef} className="pt-2"> 
@@ -13,6 +25,20 @@ export default function TeamManagementTable({ teams, handleAddTeam, handleViewTe
                 <Trello className="w-4 h-4 mr-1" /> Buat Tim Baru
             </button>
         </div>
+         <div className="flex items-center space-x-3">
+        <select
+        value={selectedCaborFilter}
+        onChange={(e) => setSelectedCaborFilter(e.target.value)}
+        className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        >
+        <option value="all">pilih cabor</option>
+        {dataCabor.map((cabor) => (
+            <option key={cabor.id} value={cabor.id}>
+                {cabor.nama_cabor}
+            </option>
+        ))}
+        </select>
+        </div>
         <div className="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -24,7 +50,7 @@ export default function TeamManagementTable({ teams, handleAddTeam, handleViewTe
                    </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {teams.map(team => {
+                    {filteredTeams.map(team => {
                         const coach = team.members.find(member => member.role === 'coach');
                         const athleteCount = team.members.filter(member => member.role === 'athlete').length;
                         return (

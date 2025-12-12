@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {CaborContext} from "../../context/ManagerCaborContext"
 import { Edit, Trash2, Trello } from "lucide-react";
 import { Modal } from "../../ui/ModalDialog";
@@ -8,9 +8,16 @@ import HapusCabor from "./HapusCabor";
 
 export default function CaborManagementTable({caborRef}){
     const {dataCabor, openModalTambahCabor, handleOpenModalTambahCabor,
-        openModalHapusCabor,handleOpenModalHapusCabor,handleCloseModalHapusCabor
+        openModalHapusCabor,handleOpenModalHapusCabor,handleCloseModalHapusCabor, allTeam,
     } = useContext(CaborContext)
+    const [selectedCabor, setSelectedCabor] = useState("")
     console.log("Data cabor", dataCabor)
+    console.log("Filter cabor", allTeam)
+    console.log("Cabor klik", selectedCabor)
+
+    function handleSelectedCabor(id){
+        setSelectedCabor(id)
+    }
     return (
         <>
         {/* Modal tambah cabor */}
@@ -34,6 +41,7 @@ export default function CaborManagementTable({caborRef}){
                 <Trello className="w-4 h-4 mr-1" /> Buat Cabor Baru
             </button>
         </div>
+       
         <div className="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

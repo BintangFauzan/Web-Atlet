@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class CaborController extends Controller
 {
     public function index(){
-        $cabor = Cabor::latest()->paginate(15);
+        $cabor = Cabor::with('team')->latest()->paginate(15);
         return response()->json([
             'status' => true,
             'data' => $cabor
