@@ -7,8 +7,10 @@ use App\Models\Matche;
 use App\Models\Practice;
 use App\Models\Team;
 use Exception;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ManagerController extends Controller
 {
@@ -28,6 +30,51 @@ class ManagerController extends Controller
             'total_teams' => $teams->count(),
             'teams_data' => $teams,
         ]);
+    }
+
+    public function getSchedules(Request $request)
+    {
+        $manager = Auth::user();
+        $teamIds = $manager->managedTeams()->pluck('id');
+
+        // Mengambil semua jadwal (latihan & pertandingan) dari tim yang dikelola
+        $practices = Practice::whereIn('team_id', $teamIds)->with('team:id,name')->get()->map(function ($p) {
+            return (object)[
+                'id' => 'practice-' . $p->id,
+                'type' => 'Latihan',
+                'team_name' => $p->team->name,
+                'team_id' => $p->team_id,
+                'datetime' => Carbon::parse($p->date->format('Y-m-d') . ' ' . $p->start_time),
+                'location' => $p->location,
+                'date' => $p->date,
+                'start_time' => $p->start_time,
+                'end_time' => $p->end_time,
+            ];
+        });
+
+        $matches = Matche::whereIn('team_id', $teamIds)->with('team:id,name')->get()->map(function ($m) {
+            return (object)[
+                'id' => 'match-' . $m->id,
+                'type' => 'Pertandingan',
+                'team_name' => $m->team->name,
+                'team_id' => $m->team_id,
+                'datetime' => Carbon::parse($m->date->format('Y-m-d') . ' ' . $m->time),
+                'location' => $m->location,
+                'opponent' => $m->opponent_name,
+                'date' => $m->date,
+                'time' => $m->time,
+            ];
+        });
+
+        // Gabungkan dan urutkan berdasarkan datetime
+        $allSchedules = $practices->concat($matches)->sortBy('datetime');
+
+        // Buat Paginator secara manual
+        $perPage = $request->input('per_page', 10); // Default 10 item per halaman, bisa diubah via query param
+        $currentPage = $request->input('page', 1);
+        $pagedData = new LengthAwarePaginator($allSchedules->forPage($currentPage, $perPage)->values(), $allSchedules->count(), $perPage, $currentPage);
+
+        return response()->json($pagedData);
     }
     public function storeTeam(Request $request)
     {
