@@ -1,5 +1,8 @@
 import { Calendar, Edit, MapPin, Trash2 } from "lucide-react";
 import Button from "../../ui/Button";
+import moment from "moment"; // 1. Import moment.js
+import { useContext, useState } from "react";
+import { JadwalContext } from "../../context/JadwalContextContent";
 
 export default function ScheduleManagementTable({
   filteredSchedules,
@@ -12,6 +15,12 @@ export default function ScheduleManagementTable({
   handleAddScheduleMatch,
   clickEditJadwalPraktek
 }) {
+  const { dataJadwal,
+        handleNextPage,
+        handlePrevPage,
+        pagination,
+      loading} = useContext(JadwalContext)
+  console.log("data jadwal = ", dataJadwal)
   return (
     <>
       <div ref={scheduleRef} className="pt-2">
@@ -68,8 +77,9 @@ export default function ScheduleManagementTable({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredSchedules.length > 0 ? (
-                filteredSchedules.map((item) => (
+              {/* 2. Lakukan map pada dataJadwal */}
+              {dataJadwal && dataJadwal.length > 0 ? (
+                dataJadwal.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -84,7 +94,8 @@ export default function ScheduleManagementTable({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       <div className="flex items-center">
-                        {item.datetime.format(
+                        {/* 3. Ubah string ke moment object sebelum format */}
+                        {moment(item.datetime).format(
                           "dddd, DD MMMM YYYY [pukul] HH:mm"
                         )}
                       </div>
@@ -101,7 +112,7 @@ export default function ScheduleManagementTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1" onClick={() => clickEditJadwalPraktek(item)}>
+                      <button className="text-indigo-600 hover:text-indigo-900 mr-4 p-1" onClick={() => clickEditJadwalPraktek(item)} >
                         <Edit className="w-5 h-5" />
                       </button>
                       <button className="text-red-600 hover:text-red-900 p-1" onClick={() => onHapus(item)}>
@@ -109,17 +120,15 @@ export default function ScheduleManagementTable({
                       </button>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
+                )) ) : ( <tr>
                   <td
                     colSpan="5"
                     className="px-6 py-4 text-center text-gray-500"
                   >
-                    Tidak ada jadwal yang cocok dengan filter ini.
+                    Tidak ada jadwal yang tersedia.
                   </td>
-                </tr>
-              )}
+                </tr> )
+              }
             </tbody>
              <div className="flex justify-between items-center mt-4">
             <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -128,17 +137,17 @@ export default function ScheduleManagementTable({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                // onClick={handlePrevPage}
-                // disabled={pagination.currentPage <= 1 || loading}
+                onClick={handlePrevPage}
+                disabled={pagination.currentPage <= 1 || loading}
               >
                 Previous
               </Button>
               <Button
                 size="sm"
-                // onClick={handleNextPage}
-                // disabled={
-                //   pagination.currentPage >= pagination.lastPage || loading
-                // }
+                onClick={handleNextPage}
+                disabled={
+                  pagination.currentPage >= pagination.last_page || loading
+                }
               >
                 Next
               </Button>

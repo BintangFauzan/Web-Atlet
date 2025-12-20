@@ -43,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('manager')->group(function() {
         // Dashboard
         Route::get('dashboard', [ManagerController::class, 'dashboard']);
+
+        // Jadwal
+        Route::get('jadwal', [ManagerController::class, 'getSchedules']);
         
         // Edit user
         Route::put("user/{id}", [AuthController::class, 'update']);

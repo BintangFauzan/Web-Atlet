@@ -7,6 +7,7 @@ import PrivateRoute from "./PrivateRoute";
 import Login from "./LoginPage/Login";
 import ManagerContextProvider from "./context/ManagerContext";
 import ManagerCaborContext from "./context/ManagerCaborContext";
+import JadwalContextContent from "./context/JadwalContextContent";
 function App() {
   return (
     <>
@@ -22,7 +23,9 @@ function App() {
             <Route path="/manager-dashboard" element={
               <ManagerContextProvider>
                 <ManagerCaborContext>
-                  <ManagerDashboard />
+                 <JadwalContextContent>
+                   <ManagerDashboard />
+                 </JadwalContextContent>
                 </ManagerCaborContext>
               </ManagerContextProvider>
             } />
