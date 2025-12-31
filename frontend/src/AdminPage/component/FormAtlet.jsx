@@ -9,6 +9,7 @@ export default function FormAtlet(){
         handleSubmitAtlet, dataAdmin} = useContext(AdminContext)
         const listCabor = dataAdmin.dataCabor
         const listTeam = dataAdmin.dataTim
+        console.log("form atlet: ", formPengguna);
     return(
         <>
             <div className="max-w-xl mx-auto p-6 bg-white shadow-xl rounded-xl">
@@ -80,6 +81,25 @@ export default function FormAtlet(){
                 placeholder="Minimal 6 karakter"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Peran (Role)
+              </label>
+              <select
+                id="role"
+                value={formPengguna.role}
+                onChange={(e) => setFormPengguna({ ...formPengguna, role: e.target.value })}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+              >
+                <option value="athlete">Atlet</option>
+                <option value="coach">Pelatih</option>
+              </select>
             </div>
 
             {/* 5. Tim (Hanya Tampil jika role bukan manager) */}

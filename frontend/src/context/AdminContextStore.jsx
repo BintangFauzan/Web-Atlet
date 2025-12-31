@@ -14,8 +14,8 @@ export default function AdminContextStore({children}){
     name: "",
     email: "",
     password: "",
-    role: "athlete", // Default role ke athlete
-    team_id: "", // Tambahkan team_id ke state
+    role: "", 
+    team_id: "", 
     cabor_id:""
   });
     const [openModal, setOpenModal] = useState({
@@ -112,11 +112,12 @@ export default function AdminContextStore({children}){
     e.preventDefault();
     try {
       await apiClient.post("/register", formPengguna);
+        alert("Pengguna baru berhasil ditambahkan!");
       setOpenModal({type: null})
-      alert("Pengguna baru berhasil ditambahkan!");
       setRefresh(true)
     } catch (err) {
-      alert("Gagal tambah ", err.data ? err.response : err.message);
+    const errorMessage = err.response ? err.response.data : err.response.message
+      alert(`Gagal tambah ${errorMessage}`);
       console.log(err.data ? err.response : err.message);
     } finally {
       setLoading(false);
