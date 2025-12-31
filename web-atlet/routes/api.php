@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AthleteController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CaborController;
@@ -39,6 +40,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('attendance/{practice}', [AthleteController::class, 'myAttendance']);
         // ... rute lain untuk Atlet
     }); 
+
+    Route::prefix('admin')->group(function(){
+        Route::get('dashboard', [AdminController::class, 'index']);
+        Route::post('team', [AdminController::class, 'store']);
+        // Delete tim
+        Route::delete('team/{id}', [AdminController::class, 'destroy']);
+        // Delete Atlet
+        Route::delete('atlet/{id}', [AdminController::class, 'deletePengguna']);
+    });
 
     Route::prefix('manager')->group(function() {
         // Dashboard

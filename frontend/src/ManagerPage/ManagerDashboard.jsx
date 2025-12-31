@@ -104,6 +104,8 @@ export default function ManagerDashboard() {
       case "athlete":
       case "atlet":
         return "bg-green-100 text-green-800";
+        case "admin":
+        return "bg-black-100 text-white-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -462,7 +464,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* --- PANGGIL KOMPONEN-KOMPONEN BARU --- */}
-        {/* <UserManagementTable
+        <UserManagementTable
           filteredUsers={filteredUsers}
           userRoleFilter={userRoleFilter}
           setUserRoleFilter={setUserRoleFilter}
@@ -471,7 +473,7 @@ export default function ManagerDashboard() {
           usersRef={usersRef}
           clikHapusPengguna={handleOpenModalHapusPengguna}
           clickEditPengguna={handleOpenModalEditPengguna}
-        /> */}
+        />
 
         <CaborManagementTable/>
 

@@ -48,6 +48,8 @@ export default function ManagerCaborContext({children}){
         
         }catch(err){
             alert("Gagal tambah cabor", err)
+        }finally{
+            setLoading(false)
         }
     }
 

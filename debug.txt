@@ -1,0 +1,56 @@
+{
+    "status": true,
+    "admin": {
+        "id": 2,
+        "name": "admin1@gmail.com",
+        "cabor": {
+            "id": 1,
+            "nama_cabor": "Sepakbola",
+            "created_at": "2025-12-25T07:09:33.000000Z",
+            "updated_at": "2025-12-25T07:09:33.000000Z"
+        }
+    },
+    "tim": [
+        {
+            "id": 1,
+            "cabor_id": 1,
+            "name": "Arsenal",
+            "manager_id": 1,
+            "created_at": "2025-12-25T07:10:38.000000Z",
+            "updated_at": "2025-12-25T07:10:38.000000Z",
+            "cabor": {
+                "id": 1,
+                "nama_cabor": "Sepakbola",
+                "created_at": "2025-12-25T07:09:33.000000Z",
+                "updated_at": "2025-12-25T07:09:33.000000Z"
+            },
+            "coach": {
+                "id": 4,
+                "name": "Mikel Arteta",
+                "email": "arteta@gmail.com",
+                "role": "coach",
+                "team_id": 1,
+                "created_at": "2025-12-25T07:15:52.000000Z",
+                "updated_at": "2025-12-25T07:15:52.000000Z",
+                "cabor_id": null
+            },
+            "athletes": []
+        },
+        {
+            "id": 2,
+            "cabor_id": 1,
+            "name": "Manchester United",
+            "manager_id": 1,
+            "created_at": "2025-12-25T07:13:17.000000Z",
+            "updated_at": "2025-12-25T07:13:17.000000Z",
+            "cabor": {
+                "id": 1,
+                "nama_cabor": "Sepakbola",
+                "created_at": "2025-12-25T07:09:33.000000Z",
+                "updated_at": "2025-12-25T07:09:33.000000Z"
+            },
+            "coach": null,
+            "athletes": []
+        }
+    ]
+}

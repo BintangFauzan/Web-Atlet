@@ -33,7 +33,7 @@ export default function CaborManagementTable({caborRef}){
 
             <div ref={caborRef} className="pt-2"> 
         <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-gray-800">Manajemen Tim ({dataCabor.length})</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">Manajemen Cabor ({dataCabor.length})</h2>
             <button
                 onClick={handleOpenModalTambahCabor}
                 className="flex items-center px-3 py-2 text-sm bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition"

@@ -19,17 +19,26 @@ class AuthController extends Controller
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required',
             // Manager bisa mendaftar sendiri, Coach, atau Athlete
-            'role' => 'required|in:manager,coach,athlete', 
+            'role' => 'required|in:manager,coach,athlete,admin', 
             
             // Validasi Tim (Hanya diwajibkan jika bukan Manager)
-            'team_id' => 'nullable|exists:teams,id', 
+            'team_id' => 'nullable|exists:teams,id',
+            'cabor_id' => 'nullable|exists:cabors,id' 
         ]);
         
         // Aturan Khusus Team ID:
         $teamId = $request->team_id;
-        if ($request->role !== 'manager' && !$teamId) {
+        if (($request->role === 'coach' || $request->role === 'athlete') && !$teamId) {
             // Atlet/Pelatih wajib memiliki team_id
-             return response()->json(['message' => 'Atlet dan Pelatih harus terikat pada Team ID.'], 422);
+            return response()->json(['message' => 'Atlet dan Pelatih harus terikat pada Team ID.'], 422);
+        }
+
+        // Aturan Khusus Cabor ID:
+        if ($request->role === 'admin' && !$request->cabor_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Admin harus terikat dengan cabor id.'
+            ], 422);
         }
         
         if ($request->role === 'manager') {
@@ -44,6 +53,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'team_id' => $teamId, // Menggunakan teamId yang sudah divalidasi
+            'cabor_id' => $request->cabor_id
         ]);
         
         // Buat token (agar langsung bisa login setelah register)
@@ -56,6 +66,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'role' => $user->role,
                 'team_id' => $user->team_id,
+                'cabor_id' => $user->cabor_id
             ],
             'token' => $token,
         ], 201);

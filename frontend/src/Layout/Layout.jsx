@@ -5,7 +5,7 @@ import { useState } from "react"
 import apiClient from "../services/apiClien"
 
 export default function Layout(){
-    const userRole = localStorage.getItem("userRole") || "manager"
+    const userRole = localStorage.getItem("UserRole") || "manager"
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
     const handleLogout = async () => {

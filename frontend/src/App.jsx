@@ -8,6 +8,8 @@ import Login from "./LoginPage/Login";
 import ManagerContextProvider from "./context/ManagerContext";
 import ManagerCaborContext from "./context/ManagerCaborContext";
 import JadwalContextContent from "./context/JadwalContextContent";
+import DashboardAdmin from "./AdminPage/DashboardAdmin";
+import AdminContextStore from "./context/AdminContextStore";
 function App() {
   return (
     <>
@@ -28,6 +30,11 @@ function App() {
                  </JadwalContextContent>
                 </ManagerCaborContext>
               </ManagerContextProvider>
+            } />
+            <Route path="/admin-dashboard" element={
+              <AdminContextStore>
+                <DashboardAdmin/>
+              </AdminContextStore>
             } />
           </Route>
         </Route>

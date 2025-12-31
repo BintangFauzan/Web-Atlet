@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'team_id',
+        'cabor_id'
     ];
 
     /**
@@ -55,6 +56,10 @@ class User extends Authenticatable
 
     public function managedTeams(){
         return $this->hasMany(Team::class, 'manager_id');
+    }
+
+    public function cabor(){
+        return $this->belongsTo(Cabor::class);
     }
 
     public function attendances(){

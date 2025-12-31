@@ -45,6 +45,7 @@ export default function PrivateRoute() {
   const isCoachRoute = currentPath.startsWith("/coach-dashboard");
   const isManagerRoute = currentPath.startsWith("/manager-dashboard");
   const isAthleteRoute = currentPath.startsWith("/athlete-dashboard");
+  const isAdminRoute = currentPath.startsWith("/admin-dashboard")
 
   // Logika pengecekan role
   if (isCoachRoute && userRole !== "coach") {
@@ -55,6 +56,9 @@ export default function PrivateRoute() {
   }
   if (isAthleteRoute && userRole !== "athlete") {
     return <Navigate to="/" replace />;
+  }
+  if(isAdminRoute && userRole !== "admin"){
+    return <Navigate to="/" replace />
   }
 
   return <Outlet />; // Tambahkan ini untuk merender child routes
